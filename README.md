@@ -47,3 +47,7 @@ I use SCSS module to prevent naming collision and have more organized stylesheet
 # Development
 
 > yarn start
+
+# Extra
+
+- Book depths rendering

@@ -11,6 +11,7 @@
   min-width: 480px;
   margin: 0 2px;
   color: #f8f4ea;
+  overflow: hidden;
 }
 
 .header {
@@ -19,6 +20,10 @@
 
 .bookRow {
   font-size: 14px;
+  position: relative;
+  > * {
+    position: relative;
+  }
 }
 
 .header,
