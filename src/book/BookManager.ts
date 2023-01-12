@@ -134,6 +134,7 @@ class BookManager {
         // Using sorted index to implement "sorted map"
         // The bids, asks object can't be sorted deterministically in JS runtime.
         // We use bidPrices, askPrices arrays are for keeping the index of prices instead.
+        // The time complexity of sortedIndexBy is O(log n)
         if (!this.bids[price]) {
           const index = _.sortedIndexBy(this.bidPrices, price, (p) => -p);
           this.bidPrices.splice(index, 0, price);

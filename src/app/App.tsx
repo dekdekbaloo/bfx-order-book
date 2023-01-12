@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import "./App.scss";
+import styles from "./App.module.scss";
 import BookActions from "../book/BookActions";
 import BookManager from "../book/BookManager";
 import { setStatus, setPrecision, updateBook } from "../book/bookSlice";
@@ -41,7 +41,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className={styles.App}>
       <BookActions
         onPrecisionChange={changePrecision}
         onToggleConnect={toggleConnect}

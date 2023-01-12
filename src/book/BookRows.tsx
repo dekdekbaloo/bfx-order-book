@@ -2,12 +2,18 @@ import clsx from "clsx";
 import React from "react";
 import { useAppSelector } from "../app/store";
 import styles from "./BookRows.module.scss";
+import { calculateDepths } from "./utils";
 
 const BookRows: React.FC = () => {
+  const status = useAppSelector(({ status }) => status);
   const book = useAppSelector(({ asks, bids }) => ({ asks, bids }));
+  const bidDepths = calculateDepths(book.bids);
+  const askDepths = calculateDepths(book.asks);
 
   return (
-    <div className={styles.BookRows}>
+    <div
+      className={clsx(styles.BookRows, status === "pending" && styles.pending)}
+    >
       <div className={styles.bookSide}>
         <div className={clsx(styles.header, styles.bidSide)}>
           <div>Count</div>
@@ -18,8 +24,8 @@ const BookRows: React.FC = () => {
         {book?.bids.map((bid, i) => (
           <div className={clsx(styles.bookRow, styles.bidSide)} key={bid.price}>
             <div>{bid.count}</div>
-            <div>{bid.amount}</div>
-            <div>{bid.amount {/* Total */}}</div>
+            <div>{bid.amount.toFixed(4)}</div>
+            <div>{bidDepths[i].toFixed(4)}</div>
             <div>{bid.price}</div>
           </div>
         ))}
@@ -31,11 +37,11 @@ const BookRows: React.FC = () => {
           <div>Amount</div>
           <div>Count</div>
         </div>
-        {book?.asks.map((ask) => (
+        {book?.asks.map((ask, i) => (
           <div className={styles.bookRow} key={ask.price}>
             <div>{ask.price}</div>
-            <div>{ask.amount /* Total */}</div>
-            <div>{ask.amount}</div>
+            <div>{Math.abs(askDepths[i]).toFixed(4)}</div>
+            <div>{Math.abs(ask.amount).toFixed(4)}</div>
             <div>{ask.count}</div>
           </div>
         ))}
