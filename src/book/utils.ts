@@ -1,4 +1,5 @@
-import { EventMessage, SnapshotMessage, UpdateMessage } from "./types";
+import BigNumber from "bignumber.js";
+import { BookRow, EventMessage, SnapshotMessage, UpdateMessage } from "./types";
 
 export function isEventMessage(x: any): x is EventMessage {
   return "event" in x;
@@ -18,4 +19,15 @@ export function isUpdateMessage(x: any): x is UpdateMessage {
   }
 
   return Array.isArray(x[1]) && typeof x[1][0] === "number";
+}
+
+export function calculateDepths(bookRows: BookRow[]): number[] {
+  let result: number[] = [];
+  let acc = new BigNumber(0);
+  bookRows.forEach(({ amount }, i) => {
+    acc = acc.plus(amount);
+    result[i] = +acc;
+  });
+
+  return result;
 }
