@@ -5,11 +5,11 @@ import BookManager from "../book/BookManager";
 import { setStatus, setPrecision, updateBook } from "../book/bookSlice";
 import { Precision } from "../book/types";
 import { useAppDispatch, useAppSelector } from "./store";
+import BookRows from "../book/BookRows";
 
 const bookManager = new BookManager();
 
-function App() {
-  const book = useAppSelector(({ asks, bids }) => ({ asks, bids }));
+const App: React.FC = () => {
   const status = useAppSelector(({ status }) => status);
   const dispatch = useAppDispatch();
 
@@ -46,14 +46,9 @@ function App() {
         onPrecisionChange={changePrecision}
         onToggleConnect={toggleConnect}
       />
-      {book?.bids.map((bid) => (
-        <pre key={bid.price}>{JSON.stringify(bid)}</pre>
-      ))}
-      {book?.asks.map((ask) => (
-        <pre key={ask.price}>{JSON.stringify(ask)}</pre>
-      ))}
+      <BookRows />
     </div>
   );
-}
+};
 
 export default App;
