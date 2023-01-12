@@ -70,11 +70,6 @@ class BookManager {
   }
 
   setPrecision(precision: Precision): boolean {
-    // Won't set the new precision while waiting for a new subscription's channel id
-    if (!this.channelID) {
-      return false;
-    }
-
     const lastChannelId = this.channelID;
     this.channelID = null;
     this.ws.send(

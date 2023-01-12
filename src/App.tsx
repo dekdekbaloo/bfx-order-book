@@ -25,13 +25,6 @@ function App() {
     bookManager.start();
   }, []);
 
-  useEffect(() => {
-    if (precision) {
-      dispatch(setStatus("pending"));
-      bookManager.setPrecision(precision);
-    }
-  }, [precision]);
-
   const toggleConnect = () => {
     if (status === "connected") {
       dispatch(setStatus("disconnected"));
@@ -50,6 +43,7 @@ function App() {
           disabled={status === "pending"}
           onClick={() => {
             dispatch(setPrecision(p as Precision));
+            bookManager.setPrecision(p as Precision);
           }}
         >
           {p}

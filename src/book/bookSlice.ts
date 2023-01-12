@@ -23,6 +23,7 @@ export const bookSlice = createSlice({
       state.status = action.payload;
     },
     setPrecision: (state, action: PayloadAction<Precision>) => {
+      state.status = "pending";
       state.precision = action.payload;
     },
     updateBook: (state, action: PayloadAction<SortedBookRows>) => {
