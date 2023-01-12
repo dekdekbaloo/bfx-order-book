@@ -1,30 +1,26 @@
-import React, { useEffect } from "react";
-import logo from "./logo.svg";
+import React, { useEffect, useState } from "react";
 import "./App.css";
 import BookManager from "./book/BookManager";
+import { SortedBookRows } from "./book/types";
 
 function App() {
+  const [book, setBook] = useState<SortedBookRows>();
+
   useEffect(() => {
     const bookManager = new BookManager();
+    bookManager.onUpdate = setBook;
+
     bookManager.start();
   }, []);
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      {book?.bids.map((bid) => (
+        <pre key={bid.price}>{JSON.stringify(bid)}</pre>
+      ))}
+      {book?.asks.map((ask) => (
+        <pre key={ask.price}>{JSON.stringify(ask)}</pre>
+      ))}
     </div>
   );
 }
