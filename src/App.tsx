@@ -8,6 +8,9 @@ const bookManager = new BookManager();
 function App() {
   const [book, setBook] = useState<SortedBookRows>();
   const [precision, setPrecision] = useState<Precision>();
+  const [connected, setConnected] = useState<boolean>(true);
+
+  // TODO: Wait till channel ID is available before any interactions
 
   useEffect(() => {
     bookManager.onUpdate = setBook;
@@ -17,9 +20,21 @@ function App() {
   useEffect(() => {
     if (precision) {
       const result = bookManager.setPrecision(precision);
-      console.log(result);
+      if (result) {
+        setConnected(true);
+      }
     }
   }, [precision]);
+
+  const toggleConnect = () => {
+    if (connected) {
+      bookManager.stop();
+    } else {
+      bookManager.start();
+    }
+
+    setConnected(!connected);
+  };
 
   return (
     <div>
@@ -33,6 +48,9 @@ function App() {
           {p}
         </button>
       ))}
+      <button onClick={toggleConnect}>
+        {connected ? "Disconenct" : "Connect"}
+      </button>
       {book?.bids.map((bid) => (
         <pre key={bid.price}>{JSON.stringify(bid)}</pre>
       ))}

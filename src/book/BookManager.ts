@@ -7,6 +7,8 @@ const bfxBookURL = "wss://api-pub.bitfinex.com/ws/2";
 class BookManager {
   ws: WebSocket = new WebSocket(bfxBookURL);
 
+  precision: Precision = "P0";
+
   channelID!: number | null;
 
   bidPrices: number[] = [];
@@ -19,17 +21,14 @@ class BookManager {
 
   onUpdate?: (bookRows: SortedBookRows) => any;
 
-  start(precision: Precision = "P0") {
-    this.ws.onopen = () => {
-      this.ws.send(
-        JSON.stringify({
-          event: "subscribe",
-          channel: "book",
-          symbol: "tBTCUSD",
-          prec: precision,
-        })
-      );
-    };
+  start() {
+    if (this.ws.readyState === this.ws.OPEN) {
+      this.subscribe();
+    } else {
+      this.ws.onopen = () => {
+        this.subscribe();
+      };
+    }
 
     this.ws.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
@@ -46,6 +45,13 @@ class BookManager {
         }
       }
     };
+  }
+
+  stop() {
+    this.ws.send(
+      JSON.stringify({ event: "unsubscribe", chanId: this.channelID })
+    );
+    this.channelID = null;
   }
 
   getBooks(): SortedBookRows {
@@ -67,21 +73,29 @@ class BookManager {
       JSON.stringify({ event: "unsubscribe", chanId: lastChannelId })
     );
 
-    this.bidPrices = [];
-    this.bids = {};
-    this.askPrices = [];
-    this.asks = {};
+    this.precision = precision;
+    this.subscribe();
 
+    return true;
+  }
+
+  private subscribe() {
+    this.reset();
     this.ws.send(
       JSON.stringify({
         event: "subscribe",
         channel: "book",
         symbol: "tBTCUSD",
-        prec: precision,
+        prec: this.precision,
       })
     );
+  }
 
-    return true;
+  private reset() {
+    this.bidPrices = [];
+    this.bids = {};
+    this.askPrices = [];
+    this.asks = {};
   }
 
   private handleSnapshotMessage(snapshot: BookData[]) {
