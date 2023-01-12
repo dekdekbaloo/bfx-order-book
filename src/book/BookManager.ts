@@ -1,5 +1,11 @@
 import _ from "lodash";
-import { BookData, BookRow, Precision, SortedBookRows } from "./types";
+import {
+  BookData,
+  BookRow,
+  Precision,
+  SortedBookRows,
+  EventMessage,
+} from "./types";
 import { isEventMessage, isSnapshotMessage, isUpdateMessage } from "./utils";
 
 const bfxBookURL = "wss://api-pub.bitfinex.com/ws/2";
@@ -19,6 +25,8 @@ class BookManager {
 
   asks: { [price: string]: BookRow } = {};
 
+  onSubscribed?: () => any;
+
   onUpdate?: (bookRows: SortedBookRows) => any;
 
   start() {
@@ -34,7 +42,7 @@ class BookManager {
       const data = JSON.parse(msg.data);
 
       if (isEventMessage(data)) {
-        this.channelID = data.chanId;
+        this.handleEventMessage(data);
       } else if (isSnapshotMessage(data)) {
         if (this.channelID === data[0]) {
           this.handleSnapshotMessage(data[1]);
@@ -96,6 +104,15 @@ class BookManager {
     this.bids = {};
     this.askPrices = [];
     this.asks = {};
+  }
+
+  private handleEventMessage(msg: EventMessage) {
+    if (msg.event === "subscribed") {
+      this.channelID = msg.chanId;
+      if (this.onSubscribed) {
+        this.onSubscribed();
+      }
+    }
   }
 
   private handleSnapshotMessage(snapshot: BookData[]) {
