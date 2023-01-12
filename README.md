@@ -1,5 +1,7 @@
 # Bitfinex Order Book (Aun Jessada)
 
+![screenshot](doc/images/screenshot.png)
+
 ## Tech Stacks
 
 - React
