@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import "./App.css";
+import "./App.scss";
 import BookActions from "../book/BookActions";
 import BookManager from "../book/BookManager";
 import { setStatus, setPrecision, updateBook } from "../book/bookSlice";

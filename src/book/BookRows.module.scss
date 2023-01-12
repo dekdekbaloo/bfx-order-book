@@ -1,0 +1,23 @@
+.BookRows {
+  display: flex;
+}
+
+.bookSide {
+  min-width: 480px;
+  margin: 0 2px;
+}
+
+.header,
+.bookRow {
+  display: flex;
+  flex: 1;
+
+  > * {
+    flex: 1 0 25%;
+    padding: 2px 0;
+  }
+
+  &.bidSide {
+    text-align: right;
+  }
+}
