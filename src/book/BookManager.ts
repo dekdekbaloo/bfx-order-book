@@ -1,13 +1,13 @@
 import _ from "lodash";
-import { BookData, BookRow, SortedBookRows } from "./types";
+import { BookData, BookRow, Precision, SortedBookRows } from "./types";
 import { isEventMessage, isSnapshotMessage, isUpdateMessage } from "./utils";
 
 const bfxBookURL = "wss://api-pub.bitfinex.com/ws/2";
 
 class BookManager {
-  ws!: WebSocket;
+  ws: WebSocket = new WebSocket(bfxBookURL);
 
-  channelID!: number;
+  channelID!: number | null;
 
   bidPrices: number[] = [];
 
@@ -19,9 +19,7 @@ class BookManager {
 
   onUpdate?: (bookRows: SortedBookRows) => any;
 
-  async start(precision = "P0") {
-    this.ws = new WebSocket(bfxBookURL);
-
+  start(precision: Precision = "P0") {
     this.ws.onopen = () => {
       this.ws.send(
         JSON.stringify({
@@ -39,14 +37,54 @@ class BookManager {
       if (isEventMessage(data)) {
         this.channelID = data.chanId;
       } else if (isSnapshotMessage(data)) {
-        this.handleSnapshotMessage(data[1]);
+        if (this.channelID === data[0]) {
+          this.handleSnapshotMessage(data[1]);
+        }
       } else if (isUpdateMessage(data)) {
-        this.handleUpdateMessage(data[1]);
+        if (this.channelID === data[0]) {
+          this.handleUpdateMessage(data[1]);
+        }
       }
     };
   }
 
-  handleSnapshotMessage(snapshot: BookData[]) {
+  getBooks(): SortedBookRows {
+    return {
+      bids: this.bidPrices.map((price) => this.bids[price]),
+      asks: this.askPrices.map((price) => this.asks[price]),
+    };
+  }
+
+  setPrecision(precision: Precision): boolean {
+    // Won't set the new precision while waiting for a new subscription's channel id
+    if (!this.channelID) {
+      return false;
+    }
+
+    const lastChannelId = this.channelID;
+    this.channelID = null;
+    this.ws.send(
+      JSON.stringify({ event: "unsubscribe", chanId: lastChannelId })
+    );
+
+    this.bidPrices = [];
+    this.bids = {};
+    this.askPrices = [];
+    this.asks = {};
+
+    this.ws.send(
+      JSON.stringify({
+        event: "subscribe",
+        channel: "book",
+        symbol: "tBTCUSD",
+        prec: precision,
+      })
+    );
+
+    return true;
+  }
+
+  private handleSnapshotMessage(snapshot: BookData[]) {
     snapshot.forEach(([price, count, amount]) => {
       if (count === 0) return;
 
@@ -60,7 +98,7 @@ class BookManager {
     });
   }
 
-  handleUpdateMessage(bookData: BookData) {
+  private handleUpdateMessage(bookData: BookData) {
     const [price, count, amount] = bookData;
     if (count > 0) {
       // Add / Update book row
@@ -106,13 +144,6 @@ class BookManager {
     if (this.onUpdate) {
       this.onUpdate(this.getBooks());
     }
-  }
-
-  getBooks(): SortedBookRows {
-    return {
-      bids: this.bidPrices.map((price) => this.bids[price]),
-      asks: this.askPrices.map((price) => this.asks[price]),
-    };
   }
 
   // async stop() {
