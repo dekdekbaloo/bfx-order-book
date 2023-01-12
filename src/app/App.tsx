@@ -1,15 +1,15 @@
 import React, { useEffect } from "react";
 import "./App.css";
-import BookManager from "./book/BookManager";
-import { setStatus, setPrecision, updateBook } from "./book/bookSlice";
-import { Precision } from "./book/types";
+import BookActions from "../book/BookActions";
+import BookManager from "../book/BookManager";
+import { setStatus, setPrecision, updateBook } from "../book/bookSlice";
+import { Precision } from "../book/types";
 import { useAppDispatch, useAppSelector } from "./store";
 
 const bookManager = new BookManager();
 
 function App() {
   const book = useAppSelector(({ asks, bids }) => ({ asks, bids }));
-  const precision = useAppSelector(({ precision }) => precision);
   const status = useAppSelector(({ status }) => status);
   const dispatch = useAppDispatch();
 
@@ -25,6 +25,11 @@ function App() {
     bookManager.start();
   }, []);
 
+  const changePrecision = (p: Precision) => {
+    dispatch(setPrecision(p));
+    bookManager.setPrecision(p);
+  };
+
   const toggleConnect = () => {
     if (status === "connected") {
       dispatch(setStatus("disconnected"));
@@ -37,23 +42,10 @@ function App() {
 
   return (
     <div>
-      {["P0", "P1", "P2", "P3", "P4"].map((p) => (
-        <button
-          key={p}
-          disabled={status === "pending"}
-          onClick={() => {
-            dispatch(setPrecision(p as Precision));
-            bookManager.setPrecision(p as Precision);
-          }}
-        >
-          {p}
-        </button>
-      ))}
-      <button onClick={toggleConnect} disabled={status === "pending"}>
-        {status === "connected" && "Disconnect"}
-        {status === "disconnected" && "Connect"}
-        {status === "pending" && "..."}
-      </button>
+      <BookActions
+        onPrecisionChange={changePrecision}
+        onToggleConnect={toggleConnect}
+      />
       {book?.bids.map((bid) => (
         <pre key={bid.price}>{JSON.stringify(bid)}</pre>
       ))}
